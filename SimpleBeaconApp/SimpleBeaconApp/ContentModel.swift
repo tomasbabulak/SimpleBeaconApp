@@ -50,7 +50,7 @@ class ContentObservableObject: NSObject, ObservableObject {
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
 
         // add our notification request
-        UNUserNotificationCenter.current().add(request)
+        center.add(request)
     }
 }
 
