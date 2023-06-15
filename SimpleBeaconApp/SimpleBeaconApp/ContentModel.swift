@@ -6,15 +6,27 @@
 //
 
 import Foundation
+import SwiftUI
 import UIKit
 import CoreLocation
 
 class ContentObservableObject: NSObject, ObservableObject {
     let locationManager: CLLocationManager = CLLocationManager()
     let center = UNUserNotificationCenter.current()
-    let beaconId = UUID(uuidString: "01122334-4556-6778-899A-ABBCCDDEEFF0")!
+    @Published var beaconId: UUID? // = UUID(uuidString: "01122334-4556-6778-899A-ABBCCDDEEFF0") // You can initialize uuid here also
 
     @Published var pendingNotifications: String? = nil
+
+    var helperUUIDString: String = ""
+    var enteredUUID: Binding<String> {
+        Binding(
+            get: { self.helperUUIDString },
+            set: {
+                self.helperUUIDString = $0
+                self.beaconId = UUID(uuidString: $0)
+            }
+        )
+    }
 
     override init() {
         super.init()
@@ -40,6 +52,11 @@ class ContentObservableObject: NSObject, ObservableObject {
     }
 
     func setBeaconNotification() {
+        guard let beaconId else {
+            assertionFailure("You did not set iBeacon UUID")
+            return
+        }
+
         let content = UNMutableNotificationContent()
         content.title = "Beacon detected!"
         content.sound = UNNotificationSound.default

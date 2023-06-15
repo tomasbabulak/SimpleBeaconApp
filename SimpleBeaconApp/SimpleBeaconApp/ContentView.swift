@@ -13,8 +13,12 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 40) {
             VStack {
+                Text("Enter iBeacon UUID")
+                TextField("01122334-4556-6778-899A-ABBCCDDEEFF0", text: model.enteredUUID)
+            }
+            VStack {
                 Text("iBeacon UUID")
-                Text(model.beaconId.uuidString)
+                Text(model.beaconId?.uuidString ?? "You must enter your iBeacon UUID first!")
             }
 
             Button(
