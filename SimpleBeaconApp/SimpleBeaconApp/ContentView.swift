@@ -11,7 +11,12 @@ struct ContentView: View {
     @StateObject var model = ContentObservableObject()
 
     var body: some View {
-        VStack {
+        VStack(spacing: 40) {
+            VStack {
+                Text("iBeacon UUID")
+                Text(model.beaconId.uuidString)
+            }
+
             Button(
                 action: { model.setBeaconNotification() },
                 label: { Text("Setup Notifications") }
