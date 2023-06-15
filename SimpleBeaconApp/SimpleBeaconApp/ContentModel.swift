@@ -14,10 +14,15 @@ class ContentObservableObject: NSObject, ObservableObject {
     let center = UNUserNotificationCenter.current()
     let beaconId = UUID(uuidString: "01122334-4556-6778-899A-ABBCCDDEEFF0")!
 
+    @Published var pendingNotifications: String? = nil
+
     override init() {
         super.init()
         requestNotifications()
         requestLocationServices()
+
+        // see, if there are some pending notifications
+        updatePendingNotifications()
     }
 
     func requestNotifications() {
@@ -51,6 +56,17 @@ class ContentObservableObject: NSObject, ObservableObject {
 
         // add our notification request
         center.add(request)
+
+        // update pending notifications
+        updatePendingNotifications()
+    }
+
+    func updatePendingNotifications() {
+        center.getPendingNotificationRequests { requests in
+            DispatchQueue.main.async {
+                self.pendingNotifications = requests.description
+            }
+        }
     }
 }
 

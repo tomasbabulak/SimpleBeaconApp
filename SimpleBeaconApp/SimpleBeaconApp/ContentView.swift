@@ -21,6 +21,15 @@ struct ContentView: View {
                 action: { model.setBeaconNotification() },
                 label: { Text("Setup Notifications") }
             )
+
+            Spacer()
+
+            VStack {
+                Text("Pending Notifications")
+                ScrollView {
+                    Text(String(describing: model.pendingNotifications))
+                }.frame(maxHeight: 200)
+            }
         }
         .padding()
     }
