@@ -13,7 +13,7 @@ import CoreLocation
 class ContentObservableObject: NSObject, ObservableObject {
     let locationManager: CLLocationManager = CLLocationManager()
     let center = UNUserNotificationCenter.current()
-    @Published var beaconId: UUID? // = UUID(uuidString: "01122334-4556-6778-899A-ABBCCDDEEFF0") // You can initialize uuid here also
+    @Published var beaconId: UUID? = UUID(uuidString: "01122334-4556-6778-899A-ABBCCDDEEFF0") // You can initialize uuid here also
 
     @Published var pendingNotifications: String? = nil
 
@@ -51,29 +51,25 @@ class ContentObservableObject: NSObject, ObservableObject {
         locationManager.requestWhenInUseAuthorization()
     }
 
-    func setBeaconNotification() {
+    func setBeaconNotifications() {
         guard let beaconId else {
             assertionFailure("You did not set iBeacon UUID")
             return
         }
 
-        let content = UNMutableNotificationContent()
-        content.title = "Beacon detected!"
-        content.sound = UNNotificationSound.default
+        // add our notification requests
+        let requestDetected = beaconDetectedNotification(for: beaconId)
+        center.add(requestDetected)
 
-        let constraint = CLBeaconIdentityConstraint(uuid: beaconId)
-        let region = CLBeaconRegion(beaconIdentityConstraint: constraint, identifier: UUID().uuidString)
-        region.notifyOnEntry = true
-        region.notifyOnExit = true
+        let requestLost = beaconLostNotification(for: beaconId)
+        center.add(requestLost)
 
-        let trigger = UNLocationNotificationTrigger(region: region, repeats: true)
+        // update pending notifications
+        updatePendingNotifications()
+    }
 
-        // choose a random identifier
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-
-        // add our notification request
-        center.add(request)
-
+    func removeBeaconNotifications() {
+        center.removeAllPendingNotificationRequests()
         // update pending notifications
         updatePendingNotifications()
     }
@@ -85,6 +81,40 @@ class ContentObservableObject: NSObject, ObservableObject {
             }
         }
     }
+
+    private func beaconDetectedNotification(for beaconId: UUID) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = "Beacon detected!"
+        content.sound = UNNotificationSound.default
+
+        let constraint = CLBeaconIdentityConstraint(uuid: beaconId)
+        let region = CLBeaconRegion(beaconIdentityConstraint: constraint, identifier: UUID().uuidString)
+        region.notifyOnEntry = true
+        region.notifyOnExit = false
+
+        let trigger = UNLocationNotificationTrigger(region: region, repeats: true)
+
+        // choose a random identifier
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        return request
+    }
+
+    private func beaconLostNotification(for beaconId: UUID) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = "Beacon Lost!"
+        content.sound = UNNotificationSound.default
+
+        let constraint = CLBeaconIdentityConstraint(uuid: beaconId)
+        let region = CLBeaconRegion(beaconIdentityConstraint: constraint, identifier: UUID().uuidString)
+        region.notifyOnEntry = false
+        region.notifyOnExit = true
+
+        let trigger = UNLocationNotificationTrigger(region: region, repeats: true)
+
+        // choose a random identifier
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        return request
+    }
 }
 
 extension ContentObservableObject: UNUserNotificationCenterDelegate {
@@ -94,7 +124,7 @@ extension ContentObservableObject: UNUserNotificationCenterDelegate {
         //If you don't want to show notification when app is open, do something here else and make a return here.
         //Even you you don't implement this delegate method, you will not see the notification on the specified controller. So, you have to implement this delegate and make sure the below line execute. i.e. completionHandler.
 
-        completionHandler([.alert, .badge, .sound])
+        completionHandler([.list, .banner, .badge, .sound])
     }
 
     // For handling tap and user actions

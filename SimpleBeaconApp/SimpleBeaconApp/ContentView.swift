@@ -21,10 +21,17 @@ struct ContentView: View {
                 Text(model.beaconId?.uuidString ?? "You must enter your iBeacon UUID first!")
             }
 
-            Button(
-                action: { model.setBeaconNotification() },
-                label: { Text("Setup Notifications") }
-            )
+            HStack {
+                Button(
+                    action: { model.setBeaconNotifications() },
+                    label: { Text("Setup Notifications") }
+                )
+
+                Button(
+                    action: { model.removeBeaconNotifications() },
+                    label: { Text("Remove Notifications") }
+                )
+            }
 
             Spacer()
 
